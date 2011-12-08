@@ -4,14 +4,16 @@ from flask import current_app, request
 from flask.globals import _request_ctx_stack
 from flask import send_from_directory
 from jinja2 import Environment, PackageLoader
-from werkzeug.exceptions import HTTPException
 from werkzeug.urls import url_quote_plus
 
-from flask_debugtoolbar.toolbar import DebugToolbar
+from toolbar import DebugToolbar
 from flask import Blueprint
 
 
-module = Blueprint('debugtoolbar', __name__)
+module = Blueprint('debugtoolbar', __name__,
+    static_folder='static',
+    template_folder='templates'
+)
 
 def replace_insensitive(string, target, replacement):
     """Similar to string.replace() but is case insensitive
@@ -42,7 +44,7 @@ class DebugToolbarExtension(object):
             raise RuntimeError(
                 "The Flask-DebugToolbar requires the 'SECRET_KEY' config "
                 "var to be set")
-        
+
         DebugToolbar.load_panels(app.config)
 
         self.app.before_request(self.process_request)
@@ -86,11 +88,12 @@ class DebugToolbarExtension(object):
         if getattr(rule, 'provide_automatic_options', False) \
            and req.method == 'OPTIONS':
             return self.make_default_options_response()
+
         # otherwise dispatch to the handler for that endpoint
         view_func = app.view_functions[rule.endpoint]
-        #view_func = self.process_view(app, view_func, req.view_args)
-        #if req.path.startswith('/_debug_toolbar/views'):
-        #    req.view_args['render'] = self.render
+        if not req.path.startswith('/_debug_toolbar'):
+            view_func = self.process_view(app, view_func, req.view_args)
+
         return view_func(**req.view_args)
 
     def _show_toolbar(self):
@@ -124,8 +127,10 @@ class DebugToolbarExtension(object):
 
     def process_response(self, response):
         if request not in self.debug_toolbars:
-            f
             return response
+        #pass on static not handled properly
+#        if  '/_debug_toolbar/' in request.url or 'static' in request.url or request.url.endswith('.ico'):
+#            return response
 
         # Intercept http redirect codes and display an html page with a
         # link to the target.

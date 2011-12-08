@@ -1,13 +1,10 @@
-import sys
 try:
     import cProfile as profile
 except ImportError:
     import profile
 import functools
-import os.path
 import pstats
 
-from flask import current_app
 from flask_debugtoolbar.panels import DebugPanel
 from flask_debugtoolbar.utils import format_fname
 
@@ -19,6 +16,10 @@ class ProfilerDebugPanel(DebugPanel):
     name = 'Profiler'
 
     user_activate = True
+
+    def __init__(self, jinja_env, context):
+        super(ProfilerDebugPanel, self).__init__(jinja_env, context)
+        self.is_active = True
 
     def has_content(self):
         return bool(self.profiler)

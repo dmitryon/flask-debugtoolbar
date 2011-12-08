@@ -1,4 +1,4 @@
-from flask import url_for, current_app
+from flask import url_for
 
 
 
@@ -9,13 +9,14 @@ class DebugToolbar(object):
         'DEBUG_TB_INTERCEPT_REDIRECTS': True,
         'DEBUG_TB_PANELS': (
             'flask_debugtoolbar.panels.versions.VersionDebugPanel',
-            'flask_debugtoolbar.panels.timer.TimerDebugPanel',
+#            'flask_debugtoolbar.panels.timer.TimerDebugPanel',
             'flask_debugtoolbar.panels.headers.HeaderDebugPanel',
             'flask_debugtoolbar.panels.request_vars.RequestVarsDebugPanel',
             'flask_debugtoolbar.panels.template.TemplateDebugPanel',
             'flask_debugtoolbar.panels.sqlalchemy.SQLAlchemyDebugPanel',
             'flask_debugtoolbar.panels.logger.LoggingPanel',
-            'flask_debugtoolbar.panels.profiler.ProfilerDebugPanel',
+            'flask_debugtoolbar.panels.performance.PerformanceDebugPanel',
+#            'flask_debugtoolbar.panels.profiler.ProfilerDebugPanel',
     
         )
     }
@@ -43,6 +44,8 @@ class DebugToolbar(object):
 
             mod = __import__(panel_module, {}, {}, [''])
             panel_class = getattr(mod, panel_classname)
+            if hasattr(panel_class, 'setup_url_rules'):
+                panel_class.setup_url_rules()
             cls.panel_classes.append(panel_class)
 
     def create_panels(self):
